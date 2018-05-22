@@ -1,0 +1,63 @@
+-- Adding rows to the State table
+INSERT INTO state (state_name)
+VALUES ('AL'), ('AK'), ('AZ'), ('AR'), ('CA'), ('CO'), ('CT'), ('DE'), ('FL'), ('GA')
+	,  ('HI'), ('ID'), ('IL'), ('IN'), ('IA'), ('KS'), ('KY'), ('LA'), ('ME'), ('MD') 
+	,  ('MA'), ('MI'), ('MN'), ('MS'), ('MO'), ('MT'), ('NE'), ('NV'), ('NH'), ('NJ') 
+	,  ('NM'), ('NY'), ('NC'), ('ND'), ('OH'), ('OK'), ('OR'), ('PA'), ('RI'), ('SC') 
+	,  ('TN'), ('TX'), ('UT'), ('VT'), ('VA'), ('WA'), ('WV'), ('WI'), ('WY'), ('SD')
+
+-- Viewing the State table
+SELECT * FROM state
+
+-- Adding rows to the Beer Type Table
+INSERT INTO beer_type (beer_type_name)
+VALUES ('American IPA'), ('American Pale Wheat Ale'), ('American Strong Ale')
+	,  ('American Wild Ale'), ('Hefeweizen'), ('Imperial/Double IPA')
+	,  ('New England IPA'), ('Rye IPA'), ('Session IPA')
+	,  ('Siason'), ('Sour Ale'), ('Sour Gose'), ('Stout')
+
+-- Viewing the Beer Type Table
+SELECT * FROM beer_type
+
+-- Adding rows to the Purchase Location Table
+INSERT INTO purchase_location (location_name, location_type, state_name)
+VALUES 
+	('Off the Wagon', 'store', 'MI')
+,	('Urbanrest Brewing Company', 'brewery', 'MI')
+,	('McShanes Pub and Whiskey Bar', 'restaurant', 'MI')
+,	('Founders Brewing Company', 'brewery', 'MI')
+,	('HopCat', 'restaurant', 'MI')
+
+-- Viewing the Purchase Location Table
+SELECT * FROM purchase_location
+
+-- Adding rows to the Brewery Table
+INSERT INTO brewery (brewery_name, state_name, year_established)
+VALUES
+	('Alaskan Brewing Company', 'AK', '1986')
+,	('Anderson Valley Brewing Company', 'CA', '1997')
+,	('Arcadia Brewing Company', 'MI', '1996')
+,	('Atwater Brewing', 'MI', '1997')
+,	('Austin Brothers Beer Company', 'MI', NULL)
+,	('Avery Brewing Company', 'CO', '1993')
+,	('Boulevard Brewing Company', 'MO', '1989')
+,	('Brewery Vivant', 'MI', NULL)
+,	('Dark Horse Brewing Company', 'MI', '1997')
+,	('Dogfish Head Craft Brewery', 'DE', '1995')
+,	('Elk Brewing', 'MI', '2016')
+,	('Ellison Brewing and Spirits', 'MI', '2015')
+,	('Founders Brewing Company', 'MI', '1997')
+,	('Griffin Claw Brewing Company', 'MI', NULL)
+,	('Grimm Artisinal Ales', 'NY', '2013')
+,	('Heavy Seas Beer', 'MD', '1995')
+,	('Bells Brewery', 'MI', '1983')
+,	('Jolly Pumpkin Artisan Ale', 'MI', '2004')
+,	('Lagunitas Brewing Company', 'CA', '1993')
+,	('Odd Side Ales', 'MI', '2009')
+,	('Sierra Nevada Brewing Company', 'CA', '1980')
+,	('Stone Brewing', 'CA', '1996')
+,	('Urbanrest Brewing Company', 'MI', '2015')
+,	('Black Lotus Brewing', 'MI', '2006')
+
+-- Viewing the Brewery Table
+SELECT * FROM brewery
