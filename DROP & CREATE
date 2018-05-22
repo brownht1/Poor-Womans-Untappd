@@ -1,0 +1,139 @@
+/* IST 659 Project Script
+Haley Brown
+Spring 2018
+The Poor Woman's Untappd */
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_purchase_location')
+BEGIN
+	DROP TABLE beer_purchase_location
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer')
+BEGIN
+	DROP TABLE beer
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_type_brewery_list')
+BEGIN
+	DROP TABLE beer_type_brewery_list
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'brewery')
+BEGIN
+	DROP TABLE brewery
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'purchase_location')
+BEGIN
+	DROP TABLE purchase_location
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_type')
+BEGIN
+	DROP TABLE beer_type
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'state')
+BEGIN
+	DROP TABLE state
+END
+GO
+
+-- Creating the State table
+CREATE TABLE state (
+	-- Columns for the State table
+		state_name varchar(2), 
+		-- Constraints on the State Table
+		CONSTRAINT PK_state PRIMARY KEY (state_name),
+)
+-- End Creating the State Table
+
+-- Creating the Beer Type table
+CREATE TABLE beer_type (
+	-- Columns for the Beer Type table
+	beer_type_id int identity, 
+	beer_type_name varchar(40) not null,
+	-- Constraints on the Beer Type table
+	CONSTRAINT PK_beer_type PRIMARY KEY (beer_type_id), 
+	CONSTRAINT U1_beer_type UNIQUE (beer_type_name)
+)
+-- End creating the Beer Type table
+
+-- Creating the Purchase Location table
+CREATE TABLE purchase_location (
+	-- Columns for the Purchase Location table
+	purchase_location_id int identity,
+	location_name varchar(50) not null,
+	location_type varchar(10) not null,
+	state_name varchar(2) not null,
+	-- Constraints on the Purchase Location table
+	CONSTRAINT PK_purchase_location PRIMARY KEY (purchase_location_id),
+	CONSTRAINT U1_purchase_location UNIQUE (location_name),
+	CONSTRAINT FK_purchase_location FOREIGN KEY (state_name) REFERENCES state(state_name),
+	/* how do I create a constraint that says the purchase location type
+	 can only be store, restaurant, or brewery? */
+)
+-- End creating the Purchase Location table
+
+--Creating the Brewery table
+CREATE TABLE brewery (
+	-- Columns for the Brewery table
+	brewery_id int identity, 
+	brewery_name varchar(50) not null,
+	year_established int,
+	state_name varchar(2) not null,
+	-- Constraints on the Brewery table
+	CONSTRAINT PK_brewery PRIMARY KEY (brewery_id), 
+	CONSTRAINT FK_brewery FOREIGN KEY (state_name) REFERENCES state(state_name)
+)
+-- End creating the Brewrey table
+
+--Creating the Beer Type Brewery List
+CREATE TABLE beer_type_brewery_list (
+	-- Columns for the Beer Type Brewery List
+	beer_type_brewery_list_id int identity, 
+	brewery_id int not null, 
+	beer_type_id int not null,
+	-- Constraints on the Beer Type Brewery List
+	CONSTRAINT PK_beer_type_brewery_list PRIMARY KEY (beer_type_brewery_list_id),
+	CONSTRAINT FK1_beer_type_brewery_list FOREIGN KEY (brewery_id) REFERENCES brewery(brewery_id),
+	CONSTRAINT FK2_beer_type_brewery_list FOREIGN KEY (beer_type_id) REFERENCES beer_type(beer_type_id)
+)
+-- End Creating the Beer Type Brewery List
+
+-- Creating the Beer table
+CREATE TABLE beer (
+	-- Columns for the Beer table
+	beer_id int identity, 
+	beer_name varchar(50) not null, 
+	rating decimal(3,1) not null,
+	date_tried datetime not null,
+	brewery_id int not null,
+	purchase_location_id int,
+	beer_type_id int not null,
+	-- Constraints on the Beer table
+	CONSTRAINT PK_beer PRIMARY KEY (beer_id),
+	CONSTRAINT FK1_beer FOREIGN KEY (brewery_id) REFERENCES brewery(brewery_id),
+	CONSTRAINT FK2_beer FOREIGN KEY (purchase_location_id) REFERENCES purchase_location(purchase_location_id),
+	CONSTRAINT FK3_beer FOREIGN KEY (beer_type_id) REFERENCES beer_type(beer_type_id)
+)
+-- End creating the Beer table
+
+-- Creating the Beer Purchase Location List
+CREATE TABLE beer_purchase_location (
+	-- Columns for the Beer Purchase Location List
+	beer_purchase_location_list_id int identity,
+	beer_id int not null,
+	purchase_location_id int not null,
+	-- Constraints on the Beer Purchase Location List
+	CONSTRAINT PK_beer_purchase_location_list PRIMARY KEY (beer_purchase_location_list_id),
+	CONSTRAINT FK1_beer_purchase_location_list FOREIGN KEY (beer_id) REFERENCES beer(beer_id),
+	CONSTRAINT FK2_beer_purchase_location_list FOREIGN KEY (purchase_location_id) REFERENCES purchase_location(purchase_location_id)
+)
+-- End creating the Beer Purchase Location List
