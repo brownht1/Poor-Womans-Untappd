@@ -1,0 +1,10 @@
+-- Deletion statements for reference use
+DELETE beer_purchase_location
+DELETE beer
+DELETE beer_type_brewery_list
+DELETE brewery
+DELETE purchase_location
+DELETE beer_type
+DELETE state
+
+-- End deletion statements
