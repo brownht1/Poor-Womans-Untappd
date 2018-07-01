@@ -1,0 +1,672 @@
+/* IST 659 Project Script
+Haley Brown
+Spring 2018
+The Poor Woman's Untappd */
+
+-- Table DROP statements
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_purchase_location')
+BEGIN
+	DROP TABLE beer_purchase_location
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer')
+BEGIN
+	DROP TABLE beer
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_type_brewery_list')
+BEGIN
+	DROP TABLE beer_type_brewery_list
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'brewery')
+BEGIN
+	DROP TABLE brewery
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'purchase_location')
+BEGIN
+	DROP TABLE purchase_location
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'beer_type')
+BEGIN
+	DROP TABLE beer_type
+END
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'state_table')
+BEGIN
+	DROP TABLE state_table
+END
+GO
+
+-- Table CREATE statements
+
+-- Creating the State table
+CREATE TABLE state_table (
+	-- Columns for the State table
+		state_name varchar(2), 
+		-- Constraints on the State Table
+		CONSTRAINT PK_state_table PRIMARY KEY (state_name),
+)
+-- End Creating the State Table
+
+-- Creating the Beer Type table
+CREATE TABLE beer_type (
+	-- Columns for the Beer Type table
+	beer_type_id int identity, 
+	beer_type_name varchar(40) not null,
+	-- Constraints on the Beer Type table
+	CONSTRAINT PK_beer_type PRIMARY KEY (beer_type_id), 
+	CONSTRAINT U1_beer_type UNIQUE (beer_type_name)
+)
+-- End creating the Beer Type table
+
+-- Creating the Purchase Location table
+CREATE TABLE purchase_location (
+	-- Columns for the Purchase Location table
+	purchase_location_id int identity,
+	location_name varchar(50) not null,
+	location_type varchar(10) not null,
+	state_name varchar(2) not null,
+	-- Constraints on the Purchase Location table
+	CONSTRAINT PK_purchase_location PRIMARY KEY (purchase_location_id),
+	CONSTRAINT U1_purchase_location UNIQUE (location_name),
+	CONSTRAINT FK_purchase_location FOREIGN KEY (state_name) REFERENCES state_table(state_name),
+	/* how do I create a constraint that says the purchase location type
+	 can only be store, restaurant, or brewery? */
+)
+-- End creating the Purchase Location table
+
+--Creating the Brewery table
+CREATE TABLE brewery (
+	-- Columns for the Brewery table
+	brewery_id int identity, 
+	brewery_name varchar(50) not null,
+	year_established int,
+	state_name varchar(2) not null,
+	-- Constraints on the Brewery table
+	CONSTRAINT PK_brewery PRIMARY KEY (brewery_id), 
+	CONSTRAINT FK_brewery FOREIGN KEY (state_name) REFERENCES state_table(state_name)
+)
+-- End creating the Brewery table
+
+--Creating the Beer Type Brewery List
+CREATE TABLE beer_type_brewery_list (
+	-- Columns for the Beer Type Brewery List
+	beer_type_brewery_list_id int identity, 
+	brewery_id int not null, 
+	beer_type_id int not null,
+	-- Constraints on the Beer Type Brewery List
+	CONSTRAINT PK_beer_type_brewery_list PRIMARY KEY (beer_type_brewery_list_id),
+	CONSTRAINT FK1_beer_type_brewery_list FOREIGN KEY (brewery_id) REFERENCES brewery(brewery_id),
+	CONSTRAINT FK2_beer_type_brewery_list FOREIGN KEY (beer_type_id) REFERENCES beer_type(beer_type_id)
+)
+-- End Creating the Beer Type Brewery List
+
+-- Creating the Beer table
+CREATE TABLE beer (
+	-- Columns for the Beer table
+	beer_id int identity, 
+	beer_name varchar(50) not null, 
+	rating decimal(3,1) not null,
+	date_tried datetime not null,
+	brewery_id int not null,
+	purchase_location_id int,
+	beer_type_id int not null,
+	-- Constraints on the Beer table
+	CONSTRAINT PK_beer PRIMARY KEY (beer_id),
+	CONSTRAINT FK1_beer FOREIGN KEY (brewery_id) REFERENCES brewery(brewery_id),
+	CONSTRAINT FK2_beer FOREIGN KEY (purchase_location_id) REFERENCES purchase_location(purchase_location_id),
+	CONSTRAINT FK3_beer FOREIGN KEY (beer_type_id) REFERENCES beer_type(beer_type_id)
+)
+-- End creating the Beer table
+
+-- Creating the Beer Purchase Location List
+CREATE TABLE beer_purchase_location (
+	-- Columns for the Beer Purchase Location List
+	beer_purchase_location_list_id int identity,
+	beer_id int not null,
+	purchase_location_id int not null,
+	-- Constraints on the Beer Purchase Location List
+	CONSTRAINT PK_beer_purchase_location_list PRIMARY KEY (beer_purchase_location_list_id),
+	CONSTRAINT FK1_beer_purchase_location_list FOREIGN KEY (beer_id) REFERENCES beer(beer_id),
+	CONSTRAINT FK2_beer_purchase_location_list FOREIGN KEY (purchase_location_id) REFERENCES purchase_location(purchase_location_id)
+)
+-- End creating the Beer Purchase Location List
+
+-- Deletion statements for reference use
+DELETE beer_purchase_location
+DELETE beer
+DELETE beer_type_brewery_list
+DELETE brewery
+DELETE purchase_location
+DELETE beer_type
+DELETE state_table
+
+-- End deletion statements
+
+-- INSERT statements
+
+-- Adding rows to the State table
+INSERT INTO state_table (state_name)
+VALUES ('AL'), ('AK'), ('AZ'), ('AR'), ('CA'), ('CO'), ('CT'), ('DE'), ('FL'), ('GA')
+	,  ('HI'), ('ID'), ('IL'), ('IN'), ('IA'), ('KS'), ('KY'), ('LA'), ('ME'), ('MD') 
+	,  ('MA'), ('MI'), ('MN'), ('MS'), ('MO'), ('MT'), ('NE'), ('NV'), ('NH'), ('NJ') 
+	,  ('NM'), ('NY'), ('NC'), ('ND'), ('OH'), ('OK'), ('OR'), ('PA'), ('RI'), ('SC') 
+	,  ('TN'), ('TX'), ('UT'), ('VT'), ('VA'), ('WA'), ('WV'), ('WI'), ('WY'), ('SD')
+
+-- Viewing the State table
+SELECT * FROM state_table
+
+-- Adding rows to the Beer Type Table
+INSERT INTO beer_type (beer_type_name)
+VALUES ('American IPA'), ('American Pale Wheat Ale'), ('American Strong Ale')
+	,  ('American Wild Ale'), ('Hefeweizen'), ('Imperial/Double IPA')
+	,  ('New England IPA'), ('Rye IPA'), ('Session IPA')
+	,  ('Siason'), ('Sour Ale'), ('Sour Gose'), ('Stout')
+
+-- Viewing the Beer Type Table
+SELECT * FROM beer_type
+
+-- Adding rows to the Purchase Location Table
+INSERT INTO purchase_location (location_name, location_type, state_name)
+VALUES 
+	('Taco Bell', 'restaurant', 'HI')
+,	('Off the Wagon', 'store', 'MI')
+,	('Urbanrest Brewing Company', 'brewery', 'MI')
+,	('McShanes Pub and Whiskey Bar', 'restaurant', 'MI')
+,	('Founders Brewing Company', 'brewery', 'MI')
+,	('HopCat', 'restaurant', 'MI')
+
+-- Viewing the Purchase Location Table
+SELECT * FROM purchase_location
+
+-- Adding rows to the Brewery Table
+INSERT INTO brewery (brewery_name, state_name, year_established)
+VALUES
+	('Alaskan Brewing Company', 'AK', '1986')
+,	('Anderson Valley Brewing Company', 'CA', '1997')
+,	('Arcadia Brewing Company', 'MI', '1996')
+,	('Atwater Brewing', 'MI', '1997')
+,	('Austin Brothers Beer Company', 'MI', NULL)
+,	('Avery Brewing Company', 'CO', '1993')
+,	('Boulevard Brewing Company', 'MO', '1989')
+,	('Brewery Vivant', 'MI', NULL)
+,	('Dark Horse Brewing Company', 'MI', '1997')
+,	('Dogfish Head Craft Brewery', 'DE', '1995')
+,	('Elk Brewing', 'MI', '2016')
+,	('Ellison Brewing and Spirits', 'MI', '2015')
+,	('Founders Brewing Company', 'MI', '1997')
+,	('Griffin Claw Brewing Company', 'MI', NULL)
+,	('Grimm Artisinal Ales', 'NY', '2013')
+,	('Heavy Seas Beer', 'MD', '1995')
+,	('Bells Brewery', 'MI', '1983')
+,	('Jolly Pumpkin Artisan Ale', 'MI', '2004')
+,	('Lagunitas Brewing Company', 'CA', '1993')
+,	('Odd Side Ales', 'MI', '2009')
+,	('Sierra Nevada Brewing Company', 'CA', '1980')
+,	('Stone Brewing', 'CA', '1996')
+,	('Urbanrest Brewing Company', 'MI', '2015')
+,	('Black Lotus Brewing', 'MI', '2006')
+
+
+-- Viewing the Brewery Table
+SELECT * FROM brewery
+
+-- Adding Rows to the Beer Type Brewery List
+INSERT INTO beer_type_brewery_list (brewery_id, beer_type_id)
+VALUES
+	((SELECT brewery_id FROM brewery WHERE brewery_name = 'Alaskan Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Anderson Valley Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Arcadia Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Atwater Brewing')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Session IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Austin Brothers Beer Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'New England IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Austin Brothers Beer Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Avery Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Boulevard Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Brewery Vivant')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Ale'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Dark Horse Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Dogfish Head Craft Brewery')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Elk Brewing')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Stout'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Ellison Brewing and Spirits')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Founders Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Founders Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Griffin Claw Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Pale Wheat Ale'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Grimm Artisinal Ales')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Wild Ale'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Heavy Seas Beer')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Bells Brewery')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Imperial/Double IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Jolly Pumpkin Artisan Ale')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Ale'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Lagunitas Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Strong Ale'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Odd Side Ales')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Rye IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Sierra Nevada Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Stone Brewing')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Stone Brewing')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Session IPA'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Urbanrest Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Siason'))
+	, ((SELECT brewery_id FROM brewery WHERE brewery_name = 'Black Lotus Brewing')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Hefeweizen'))
+
+-- Viewing the Beer Type Brewery List
+SELECT brewery.brewery_name
+	 , beer_type.beer_type_name
+FROM beer_type_brewery_list
+JOIN brewery ON brewery.brewery_id = beer_type_brewery_list.brewery_id
+JOIN beer_type ON beer_type.beer_type_id = beer_type_brewery_list.beer_type_id
+
+-- Adding Rows to the Beer Table
+INSERT INTO beer (beer_name, rating, date_tried, brewery_id,
+	purchase_location_id, beer_type_id)
+VALUES
+	('Spruce IPA', 2.25, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Alaskan Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	,('Framboise Rose Gose', 4.50, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Anderson Valley Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+
+	, ('Mango Surprise IPA', 3.25, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Arcadia Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Going Steady', 2.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Atwater Brewing')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Session IPA'))
+
+	, ('Moscow Mule IPA', 2.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Austin Brothers Beer Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Strawberry Smoothie IPA', 2.75, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Austin Brothers Beer Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'New England IPA'))
+
+	, ('El Gose', 3.25, '05/05/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Avery Brewing Company')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+
+	, ('Hibiscus Gose', 3.50, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Boulevard Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+
+	,('Lost Minds', 3.00, '04/28/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Brewery Vivant')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Ale'))
+
+	,('Rain In Blood', 3.50, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Dark Horse Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Lupa Luau IPA', 3.25, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Dogfish Head Craft Brewery')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	,('Flesh and Blood IPA', 3.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Dogfish Head Craft Brewery')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Romantic Chemistry', 3.25, '04/29/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Dogfish Head Craft Brewery')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'HopCat')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	,('Orange IPA', 3.50, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Elk Brewing')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Tiramasu Coffee Stout', 2.75, '04/29/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Ellison Brewing and Spirits')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'HopCat')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Stout'))
+
+	, ('Centennial IPA', 3.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Founders Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Founders Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	,('Galaxy Wheat IPA', 2.25, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Founders Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Founders Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	,('Green Zebra', 3.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Founders Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Gose'))
+
+	, ('Mr Blue Sky', 4.00, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Griffin Claw Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Pale Wheat Ale'))
+
+	, ('Psychokinesis', 4.00, '04/28/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Grimm Artisinal Ales')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Wild Ale'))
+
+	, ('TropiCannon', 3.75, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Heavy Seas Beer')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Hopsolution Ale', 3.50, '04/28/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Bells Brewery')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Imperial/Double IPA'))
+
+	, ('La Roja Du Kriek', 2.75, '05/04/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Jolly Pumpkin Artisan Ale')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Off The Wagon')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Sour Ale'))
+
+	, ('Undercover Investigation Shut Down Ale', 3.75, '05/05/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Lagunitas Brewing Company')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American Strong Ale'))
+
+	, ('Tangerine of My Rye', 2.50, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Odd Side Ales')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Rye IPA'))
+
+	, ('Stone Tangerine Express IPA', 3.75, '05/20/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Stone Brewing')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'American IPA'))
+
+	, ('Stone Go To IPA', 3.5, '05/02/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Stone Brewing')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Off The Wagon')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Session IPA'))
+
+	, ('Saison', 2.75, '05/12/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Urbanrest Brewing Company')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Urbanrest Brewing Company')
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Siason'))
+
+	, ('WWW Wheat', 3.25, '04/08/2018'
+	, (SELECT brewery_id FROM brewery WHERE brewery_name = 'Black Lotus Brewing')
+	, NULL
+	, (SELECT beer_type_id FROM beer_type WHERE beer_type_name = 'Hefeweizen'))
+
+-- Viewing the Beer Table
+SELECT * FROM beer
+
+
+-- Adding Rows to the Beer Purchase Location List
+INSERT INTO beer_purchase_location (beer_id, purchase_location_id)
+VALUES
+	((SELECT beer_id FROM beer WHERE beer_name = 'Spruce IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Framboise Rose Gose')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Mango Surprise IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Going Steady')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Moscow Mule IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Strawberry Smoothie IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Hibiscus Gose')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Rain In Blood')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Lupa Luau IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Flesh and Blood IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Romantic Chemistry')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'HopCat'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Orange IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Tiramasu Coffee Stout')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'HopCat'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Centennial IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Founders Brewing Company'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Galaxy Wheat IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Founders Brewing Company'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Green Zebra')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Mr Blue Sky')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'TropiCannon')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'La Roja Du Kriek')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Off The Wagon'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Tangerine of My Rye')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Stone Tangerine Express IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'McShanes Pub and Whiskey Bar'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Stone Go To IPA')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Off The Wagon'))
+
+	,((SELECT beer_id FROM beer WHERE beer_name = 'Saison')
+	, (SELECT purchase_location_id FROM purchase_location WHERE location_name = 'Urbanrest Brewing Company'))
+
+-- View the Beer Purchase Location table
+SELECT * FROM beer_purchase_location
+-- View the Beer Purchase Location table with names pulled in
+SELECT beer.beer_name
+	 , purchase_location.location_name
+	 , purchase_location.location_type
+FROM beer
+JOIN beer_purchase_location ON beer_purchase_location.beer_id = beer.beer_id
+JOIN purchase_location ON beer_purchase_location.purchase_location_id = purchase_location.purchase_location_id
+	
+
+-- Creating a VIEW for average rating per beer type
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'AvgRatingPerType')
+BEGIN
+	DROP VIEW AvgRatingPerType
+END
+GO
+
+CREATE VIEW AvgRatingPerType AS 
+SELECT
+	beer_type.beer_type_id
+	, beer_type.beer_type_name
+	, avg(beer.rating) as average_rating
+	, count(beer.beer_type_id) as count_of_beer_type
+FROM beer_type
+JOIN beer ON beer.beer_type_id = beer_type.beer_type_id
+GROUP BY
+	beer_type.beer_type_id 
+	, beer_type.beer_type_name
+
+SELECT * FROM AvgRatingPerType
+ORDER BY average_rating DESC
+
+-- Creating a VIEW the lists the count of each beer type
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CountOfBeerType')
+BEGIN
+	DROP VIEW CountOfBeerType
+END
+GO
+
+CREATE VIEW CountOfBeerType AS 
+SELECT
+	beer_type.beer_type_id
+	, beer_type.beer_type_name
+	, count(beer.beer_type_id) as count_of_beer_type
+FROM beer_type
+JOIN beer ON beer.beer_type_id = beer_type.beer_type_id
+GROUP BY
+	beer_type.beer_type_id 
+	, beer_type.beer_type_name
+
+SELECT * FROM CountOfBeerType
+ORDER BY count_of_beer_type DESC
+
+
+-- Create a function to retrieve a rating for a given beer name
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'dbo.beer_rating_lookup')
+BEGIN
+	DROP FUNCTION dbo.beer_rating_lookup
+END
+GO
+
+CREATE FUNCTION dbo.beer_rating_lookup(@beer_name varchar(40))
+RETURNS decimal(3,1) AS
+BEGIN
+	DECLARE @returnValue decimal(3,1)
+	SELECT @returnValue = rating FROM beer
+	WHERE beer_name = @beer_name
+	
+	RETURN @returnValue
+END
+GO
+
+SELECT 'What was my rating for Mr Blue Sky?', dbo.beer_rating_lookup('Mr Blue Sky')
+
+-- Create a funcion to retrieve the number of beers I've tried in a certain state
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'dbo.state_beer_lookup')
+BEGIN
+	DROP FUNCTION dbo.state_beer_lookup
+END
+GO
+
+CREATE FUNCTION dbo.state_beer_lookup(@state_name varchar(2))
+RETURNS varchar(3) AS
+BEGIN
+	DECLARE @returnValue varchar(3)
+	SELECT @returnValue = count(beer.beer_id) FROM beer
+	JOIN brewery ON beer.brewery_id = brewery.brewery_id
+	WHERE state_name = @state_name
+	RETURN @returnValue
+END
+GO
+
+SELECT 'How many beers have I had from Michigan?', dbo.state_beer_lookup('MI')
+SELECT 'How many beers have I had from Nebraska?', dbo.state_beer_lookup('NE')
+
+-- I've had Mr Blue Sky since I originally tried it and want to update its rating.
+UPDATE beer SET rating = 5.0
+WHERE beer_name = 'Mr Blue Sky'
+
+SELECT beer_name, rating
+FROM beer
+WHERE beer_name = 'Mr Blue Sky'
+-- That's better
+
+-- I want to delete the Taco Bell record from the Purchase Location table. I've suddenly realized the Taco Bell in Hawaii
+-- does not serve beer...and I've never been to Hawaii anyway
+SELECT * FROM purchase_location
+-- Here's the list as it is now
+
+DELETE purchase_location WHERE location_name = 'Taco Bell'
+
+SELECT * FROM purchase_location
+-- Good to go
+
+-- Creating a stored procedure
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'AddBeers')
+BEGIN
+	DROP PROCEDURE AddBeers
+END
+GO
+
+CREATE PROCEDURE AddBeers (@beerName varchar(50), @rating decimal(3,1), @date_tried datetime, @brewery_id int
+	, @purchase_location_id int, @beer_type_id int)
+AS
+BEGIN
+	-- We have the user name, but we need the ID for the login table
+	-- First, declare a variable to hold the ID
+
+	-- Now we can add the row using an INSERT statement
+	INSERT INTO beer (beer_name, rating, date_tried, brewery_id
+		, purchase_location_id, beer_type_id)
+	VALUES (@beerName, @rating, @date_tried, @brewery_id, @purchase_location_id, @beer_type_id)
+
+	-- Now return the @@identity so the calling code knows where
+	-- the data ended up
+	RETURN @@identity
+END 
+GO
+
+DECLARE @addedValue int
+EXEC @addedValue = AddBeer 'Oarsman Ale', 3.75, '04/22/2018', 117, 6 
+	, 2
+SELECT
+	beer.beer_id
+	, beer.beer_name
+	, beer.rating
+	, beer.date_tried
+	, brewery.brewery_name
+	, purchase_location.location_name
+	, beer_type.beer_type_name
+FROM beer
+JOIN brewery on brewery.brewery_id = beer.brewery_id
+JOIN purchase_location on purchase_location.purchase_location_id = beer.purchase_location_id
+JOIN beer_type on beer_type.beer_type_id = beer.beer_type_id
+WHERE beer_id = @addedValue
+
+-- Its a little cumbersome because you have to know the IDs to add the beer.
+
